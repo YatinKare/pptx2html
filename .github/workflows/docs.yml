@@ -1,0 +1,71 @@
+name: Docs (uv + MkDocs)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+# Required for GitHub Pages deploy
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build docs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Install Python
+        run: uv python install 3.12
+
+      # If mkdocs/mkdocstrings are in your dev extras (recommended)
+      # e.g., pyproject -> [project.optional-dependencies].dev = ["mkdocs-material", "mkdocstrings[python]", ...]
+      - name: Sync docs deps
+        run: uv sync --all-extras --dev
+        # Or, if you track a dedicated docs group:
+        # run: uv sync --group docs
+
+      - name: Build MkDocs site
+        run: uv run mkdocs build --strict
+        # --strict fails on warnings (broken links, etc.). Remove if too strict.
+
+      - name: Upload artifact for PR preview
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: site
+
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
