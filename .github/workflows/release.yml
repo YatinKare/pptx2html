@@ -1,0 +1,67 @@
+name: Publish (uv, Trusted Publisher)
+
+on:
+  push:
+    tags:
+      - "v*.*.*"     # e.g., v0.3.0 or v1.0.0
+
+permissions:
+  id-token: write    # REQUIRED for PyPI Trusted Publisher (OIDC)
+  contents: read
+
+jobs:
+  build-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Install Python
+        run: uv python install 3.12
+
+      # HARD CHECK: pyproject version must match tag (strip 'v')
+      - name: Check version matches tag
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          FILE_VERSION=$(python - <<'PY'
+          import tomllib
+          from pathlib import Path
+          data = tomllib.loads(Path("pyproject.toml").read_text())
+          print(data["project"]["version"])
+          PY
+          )
+          echo "Tag version:    $TAG_VERSION"
+          echo "Pyproject ver.: $FILE_VERSION"
+          if [ "$TAG_VERSION" != "$FILE_VERSION" ]; then
+            echo "ERROR: Tag version does not match pyproject.toml version"
+            exit 1
+          fi
+
+      - name: Build (sdist & wheels)
+        run: uv build --no-sources
+
+      - name: Validate distributions
+        run: uvx twine check dist/*
+
+      - name: Publish to PyPI (OIDC)
+        run: uv publish
+
+      - name: Smoke install from PyPI
+        run: |
+          PACKAGE=$(python - <<'PY'
+          import tomllib
+          from pathlib import Path
+          data = tomllib.loads(Path("pyproject.toml").read_text())
+          print(data["project"]["name"])
+          PY
+          )
+          echo "Testing install for $PACKAGE"
+          uv run --no-project --refresh-package "$PACKAGE" --with "$PACKAGE" \
+            -- python -c "import importlib; importlib.import_module('$PACKAGE.replace('-', '_')'); print('Import OK')"
