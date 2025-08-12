@@ -1,0 +1,16 @@
+site_name: pptx2html
+theme:
+  name: material
+nav:
+  - Home: index.md
+  - API: api.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
