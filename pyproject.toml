@@ -23,6 +23,7 @@ dev = [
   "mkdocstrings[python]>=0.25",
   "build>=1.2",
   "twine>=5.1",
+  "griffe>=0.48"
 ]
 
 [tool.ruff]
