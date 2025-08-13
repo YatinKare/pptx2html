@@ -50,7 +50,7 @@ ignore = ["E501"]
 python_version = "3.11"
 strict = true
 mypy_path = "src"
-packages = ["src/pptx2html"]
+packages = ["pptx2html"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
