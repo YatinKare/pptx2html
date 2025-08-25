@@ -9,4 +9,10 @@ repos:
     rev: v1.10.0
     hooks:
       - id: mypy
-        additional_dependencies: []
+        args: ["--strict"]
+        additional_dependencies:
+          - lxml==5.2
+          - types-lxml
+          - pillow==10.3
+          - types-pillow
+          - htpy==25.8.1

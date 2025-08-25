@@ -5,7 +5,7 @@ description = "Convert PowerPoint (.pptx) slides to single-file HTML with absolu
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [{ name = "Yatin Kare", email = "yatin.kare@gmail.com" }]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
   "lxml>=5.2",
   "pillow>=10.3",
@@ -58,4 +58,5 @@ addopts = "-q --disable-warnings --maxfail=1"
 
 [dependency-groups]
 dev = [
+    "htpy>=25.8.1",
 ]
