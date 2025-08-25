@@ -89,8 +89,11 @@ def _build_minimal_slide_html(*, width_px: int, height_px: int) -> str:
     the slide HTML.
     """
 
-    # Lazy import to avoid hard dependency at module import time.
-    from htpy import tags as h
+    from typing import Any, cast
+
+    from htpy import tags as _tags
+
+    h = cast(Any, _tags)
 
     css = (
         "html, body { margin:0; padding:0; background:#ffffff; overflow:hidden; }\n"
