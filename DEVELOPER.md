@@ -67,6 +67,11 @@ We use a **trunk-based** model: `main` is always releasable.
      ```bash
      uv run pytest
      ```
+   * Run user test:
+     ```bash
+     uv run nox -s user_wheel -- --input "./dev/Test.pptx"
+     ```
+
 3. **Commit using Conventional Commits** (see section 2.1).
 4. **Push branch:**
 
@@ -265,6 +270,7 @@ git checkout -b feat/my-feature
 # 2. Code + test locally
 pre-commit run --all-files
 uv run pytest
+uv run nox -s user_wheel -- --input "./dev/Test.pptx"
 
 # 3. Commit + push
 git commit -m "feat(area): short desc"
