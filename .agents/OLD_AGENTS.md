@@ -56,6 +56,9 @@ OpenAI Codex should run tests with the following commands:
 # Run pre-commit hooks
 pre-commit run --all-files
 
+# User-Test package via nox_uv
+uv run nox -s user_wheel -- --input "./dev/Test.pptx"
+
 # Run all tests with OpenAI Codex
 uv run pytest
 
