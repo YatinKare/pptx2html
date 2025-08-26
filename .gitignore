@@ -394,3 +394,9 @@ pyvenv.cfg
 pip-selfcheck.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python,venv
+
+## Macos
+.DS_Store
+
+## uv nox output
+out_wheel/

@@ -1,15 +1,3 @@
-"""Public API for pptx2html.
-
-This module exposes the single-call function ``parse_pptx``. In this initial
-stub, it does not parse the PPTX. Instead, it produces a fixed output folder
-structure with a minimal HTML slide and a placeholder white background image,
-as specified in AGENTS.md.
-
-HTML is generated using the ``htpy`` package rather than multi-line strings.
-The import is performed lazily to keep module import light and avoid a hard
-runtime dependency unless the API is invoked.
-"""
-
 from __future__ import annotations
 
 from pathlib import Path
@@ -26,15 +14,6 @@ def parse_pptx(
     input_path: str | Path, output_dir: str | Path, debug: bool = False
 ) -> ConversionReport | None:
     """Create a hello-world output layout for a PPTX conversion.
-
-    This stub mirrors the public API shape without performing any parsing. It
-    creates the following structure under ``output_dir``:
-
-    - ``output_presentation/slide1/slide1.html``
-    - ``output_presentation/slide1/media/background.png`` (blank white)
-
-    The generated HTML contains a minimal fixed-size canvas and an inline
-    ``<style>`` block to avoid scrollbars on typical laptop screens at 100% zoom.
 
     Parameters
     ----------
@@ -63,6 +42,7 @@ def parse_pptx(
     media_dir.mkdir(parents=True, exist_ok=True)
 
     # Write a blank white PNG as the background placeholder
+    # Note: keep the filename extension consistent with the PNG bytes below.
     background_png = media_dir / "background.png"
     if not background_png.exists():
         background_png.write_bytes(_WHITE_PNG_1X1)
@@ -89,36 +69,29 @@ def _build_minimal_slide_html(*, width_px: int, height_px: int) -> str:
     the slide HTML.
     """
 
-    from typing import Any, cast
-
-    from htpy import tags as _tags
-
-    h = cast(Any, _tags)
+    import htpy as h
 
     css = (
         "html, body { margin:0; padding:0; background:#ffffff; overflow:hidden; }\n"
-        f".slide-canvas {{ position:relative; width:{width_px}px; height:{height_px}px; "
-        "background:#ffffff; background-image:url('media/background.png'); "
-        "background-size:cover; background-position:center; }}\n"
-        "/* Shapes/content will be absolutely positioned within .slide-canvas */\n"
+        + ".slide-canvas { position:relative; width:"
+        + str(width_px)
+        + "px; height:"
+        + str(height_px)
+        + "px; background-color:#ffffff; background-image:url(media/background.png); "
+        + "background-repeat:no-repeat; background-size:cover; background-position:center; }\n"
+        + "/* Shapes/content will be absolutely positioned within .slide-canvas */\n"
     )
 
-    doc = h.html(
-        {"lang": "en"},
-        h.head(
-            h.meta({"charset": "utf-8"}),
-            h.meta(
-                {
-                    "name": "viewport",
-                    "content": "width=device-width, initial-scale=1",
-                }
-            ),
-            h.title("slide1"),
-            h.style(css),
-        ),
-        h.body(
-            h.div({"class": "slide-canvas", "aria-label": "Slide 1"}),
-        ),
-    )
+    # htpy elements use [] for children and () for attributes
+    doc = h.html[
+        h.head[
+            h.meta(charset="utf-8"),
+            h.meta(name="viewport", content="width=device-width, initial-scale=1"),
+            h.title["slide1"],
+            h.style[css],
+        ],
+        h.body[h.div(class_="slide-canvas", aria_label="Slide 1"),],
+    ](lang="en")
 
-    return "<!doctype html>\n" + str(doc) + "\n"
+    # htpy's html element already emits the <!doctype html>
+    return str(doc) + "\n"
