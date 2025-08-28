@@ -1,4 +1,5 @@
 import pytest
+
 from pptx2html.exceptions import (
     ErrorCode,
     InputFileError,
