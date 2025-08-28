@@ -53,6 +53,7 @@ strict = true
 mypy_path = "src"
 packages = ["pptx2html"]
 
+
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 addopts = "-q --disable-warnings --maxfail=1"
